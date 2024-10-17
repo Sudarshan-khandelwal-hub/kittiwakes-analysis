@@ -12,22 +12,22 @@ This repository contains an analysis of kittiwake populations based on various d
   - `Kittiwake_Measurement_20533986.csv`
   - `Kittiwake_Location_20533986.csv`
 
-## Key Findings (Google XYZ Framework)
+## Key Findings
 
-### Problem (X)
+### Problem
 - Ornithologists needed to understand the complex factors affecting kittiwake populations
 - Multiple datasets with different variables made comprehensive analysis challenging
 - Uncertainty about whether population decline was site-dependent
 - Lack of clear understanding about subspecies differences
 
-### Solution (Y)
+### Solution
 - Implemented multi-faceted statistical analysis using R
 - Developed predictive models for breeding pairs
 - Conducted comparative analysis between subspecies
 - Applied both linear and logarithmic transformations
 - Used advanced statistical methods (MANOVA, confidence intervals)
 
-### Results (Z)
+### Results
 1. Population Dynamics:
    - Discovered site-dependent population decline, contrary to initial hypothesis
    - Estimated 45.5 breeding pairs for Site C in 2007
