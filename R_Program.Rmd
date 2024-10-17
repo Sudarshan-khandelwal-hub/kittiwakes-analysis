@@ -1,0 +1,218 @@
+---
+Author: "Sudarshan Khandelwal"
+Student_Number: "20533986"
+title: "Kittiwake_Analysis"
+output: html_notebook
+---
+```{r}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(broom)
+
+```
+
+```{r}
+Observation_data <- read.csv("C:\\Users\\sudar\\OneDrive\\Desktop\\applied stats\\Kittiwake_Observation_20533986.csv")
+```
+
+
+```{r}
+head(Observation_data)
+
+```
+
+
+
+```{r}
+# 1. Descriptive Statistics
+summary(Observation_data$dusk)
+mean_obs <- mean(Observation_data$dusk)
+sd_obs <- sd(Observation_data$dusk)
+
+# 2. Graphical Analysis
+plot(density(Observation_data$dusk), main = "Kernel Density Plot", xlab = "Values", ylab = "Density", col = "blue", lwd = 2)
+hist(Observation_data$dusk, main="Histogram of Kittiwake Observations", xlab="Number of Kittiwakes", col="blue")
+boxplot(Observation_data$dusk, main="Boxplot of Kittiwake Observations", ylab="Number of Kittiwakes")
+
+
+```
+
+
+```{r}
+
+# Calculating the 80% confidence interval for the mean number of kittiwakes observed at dusk
+t.test(Observation_data$dusk, conf.level = 0.80)
+
+```
+
+
+#Histroical Data
+
+
+```{r}
+Historical_data <- read.csv("C:\\Users\\sudar\\OneDrive\\Desktop\\applied stats\\Kittiwake_Historical_20533986.csv")
+```
+
+
+```{r}
+
+head(Historical_data)
+
+```
+
+```{r}
+# Rename the first column to 'Year'
+names(Historical_data)[1] <- "Year"
+
+# Transform the data from wide to long format
+long_data <- pivot_longer(Historical_data, cols = -Year, names_to = "Site", values_to = "BreedingPairs")
+
+# Perform linear regression for each site
+trends <- long_data %>%
+  group_by(Site) %>%
+  do(tidy(lm(BreedingPairs ~ Year, data = .)))
+
+# Check the trends
+print(trends)
+
+# Plotting
+ggplot(long_data, aes(x = Year, y = BreedingPairs, color = Site)) +
+  geom_line() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Trends in Kittiwake Breeding Pairs at Different Sites",
+       x = "Year", y = "Number of Breeding Pairs") +
+  theme_minimal()
+```
+
+
+```{r}
+# Extract just the Year and Site C data into a new data frame
+site_c_data <- Historical_data[c('Year','Site.C')]
+
+# Now site_c_data contains only the data for Site C
+# You can view the first few rows to confirm
+head(site_c_data)
+
+```
+
+
+
+```{r}
+
+# Use the approx function to interpolate
+interpolated_value <- approx(x = site_c_data$Year, 
+                             y = site_c_data$Site.C, 
+                             xout = 2007)
+
+# The interpolated number of breeding pairs for Site C in 2007
+estimated_breeding_pairs_2007 <- interpolated_value$y
+
+# Output the estimate
+estimated_breeding_pairs_2007
+
+
+```
+
+
+#Measurement data
+
+```{r}
+Measurement_data <- read.csv("C:\\Users\\sudar\\OneDrive\\Desktop\\applied stats\\Kittiwake_Measurement_20533986.csv")
+```
+
+
+```{r}
+head(Measurement_data)
+```
+
+```{r}
+# Visual summary using boxplots for each measurement
+ggplot(Measurement_data, aes(x = Sub.species, y = Wingspan)) + 
+  geom_boxplot() + 
+  labs(title = "Wing Span by Subspecies")
+
+ggplot(Measurement_data, aes(x = Sub.species, y = Culmen)) + 
+  geom_boxplot() + 
+  labs(title = "Culmen Length by Subspecies")
+
+ggplot(Measurement_data, aes(x = Sub.species, y = Weight)) + 
+  geom_boxplot() + 
+  labs(title = "Weight by Subspecies")
+
+
+```
+
+
+```{r}
+
+# Assuming Subspecies is a factor, split the data by sub-species
+subspecies_data <- split(Measurement_data, Measurement_data$Sub.species)
+
+# Perform Pearson's correlation test for each sub-species
+correlation_results <- lapply(subspecies_data, function(data) {
+  cor.test(data$Wingspan, data$Culmen)
+})
+
+# Print the results
+print(correlation_results)
+
+
+```
+```{r}
+# Perform a t-test on weights
+t_test_result <- t.test(Weight ~ Sub.species, data = Measurement_data)
+
+# Print the result
+print(t_test_result)
+
+```
+```{r}
+# Perform MANOVA
+manova_result <- manova(cbind(Wingspan, Culmen, Weight) ~ Sub.species, data = Measurement_data)
+
+# Print the summary of the MANOVA result
+print(summary(manova_result))
+
+```
+
+#Location data
+
+```{r}
+location_data <- read.csv("C:\\Users\\sudar\\OneDrive\\Desktop\\applied stats\\Kittiwake_Location_20533986.csv")
+```
+
+```{r}
+head(location_data)
+```
+
+```{r}
+# Fit a linear model
+model1 <- lm(Breeding.pairs ~ Coast.direction + sandeel + Summer.temp + cliff.height, data = location_data)
+summary(model1)
+
+```
+
+```{r}
+# Fit a linear model with the logarithm of the number of breeding pairs
+model2 <- lm(log(Breeding.pairs) ~ Coast.direction + sandeel + Summer.temp + cliff.height, data = location_data)
+summary(model2)
+
+```
+
+```{r}
+# model2 is the chosen model
+new_data <- data.frame(Coast.direction = "South",
+                       sandeel = 1.27,
+                       Summer.temp = 25.3,
+                       cliff.height = 3.15)
+
+# Predict with a 90% confidence interval
+predictions <- predict(model2, newdata = new_data, interval = "confidence", level = 0.90)
+
+# Since we used a log transformation, we need to back-transform the prediction
+exp(predictions)
+
+```
+
